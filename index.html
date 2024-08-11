@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>YouTube Link Converter</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f2f2f2;
+            text-align: center;
+            margin: 0;
+            padding: 0;
+        }
+
+        h1, h2 {
+            color: #333;
+        }
+
+        #password-form, #saved-links {
+            background-color: #fff;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+            margin: 5% auto;
+            width: 80%;
+            max-width: 300px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+
+        input {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 15px;
+            box-sizing: border-box;
+        }
+
+        button {
+            background-color: #007BFF;
+            color: #fff;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            width: 100%;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        ul {
+            list-style-type: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        li {
+            margin-bottom: 10px;
+        }
+    </style>
+    <script>
+         function saveLink(youtubeLink) {
+            // Retrieve existing links or initialize an empty array
+            var savedLinks = JSON.parse(localStorage.getItem('savedLinks')) || [];
+            
+            // Add the new link to the array
+            savedLinks.push(youtubeLink);
+            
+            // Save the updated array back to local storage
+            localStorage.setItem('savedLinks', JSON.stringify(savedLinks));
+        }
+
+        function getSavedLinks() {
+            // Retrieve saved links from local storage
+            var savedLinks = JSON.parse(localStorage.getItem('savedLinks')) || [];
+            return savedLinks;
+        }
+
+        function convertAndOpen() {
+            var youtubeLink = document.getElementById('youtubeLink').value;
+            var videoId = extractVideoId(youtubeLink);
+
+            if (videoId) {
+                // Save the link before opening the new window
+                saveLink(youtubeLink);
+
+                // Rest of your existing code for opening the new window...
+                var embedUrl = `https://www.youtube-nocookie.com/embed/${videoId}?undefined&autoplay=1`;
+                var newWindow = window.open('about:blank');
+                
+                if (newWindow) {
+                    var newDocument = newWindow.document;
+                    newDocument.write(`
+                        <!DOCTYPE html>
+                        <html lang="en">
+                        <head>
+                            <meta charset="UTF-8">
+                            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                            <title>YouTube Video</title>
+                            <style>
+                                body {
+                                    margin: 0;
+                                    display: flex;
+                                    justify-content: center;
+                                    align-items: center;
+                                    height: 100vh;
+                                }
+                            </style>
+                        </head>
+                        <body>
+                            <iframe width="560" height="315" src="${embedUrl}" frameborder="0" allowfullscreen></iframe>
+                        </body>
+                        </html>
+                    `);
+                    newDocument.close();
+                } else {
+                    alert('Error opening new window. Please check your browser settings.');
+                }
+            } else {
+                alert('Invalid YouTube link. Please enter a valid link.');
+            }
+        }
+
+        function extractVideoId(url) {
+            var regex = /(?:youtube\.com\/(?:[^\/\n\s]+\/\S+\/|(?:v|e(?:mbed)?)\/|\S*?[?&]v=)|youtu\.be\/)([a-zA-Z0-9_-]{11})/;
+            var match = url.match(regex);
+            return match ? match[1] : null;
+        }
+    </script>
+</head>
+<body>
+    <h1>YouTube Link Converter</h1>
+    <div id="password-form">
+        <label for="youtubeLink">Enter a YouTube link:</label>
+        <input type="text" id="youtubeLink" placeholder="e.g., https://www.youtube.com/watch?v=VIDEO_ID">
+        <button onclick="convertAndOpen()">Convert and Open</button>
+    </div>
+
+    <!-- Display saved links section -->
+    <div id="saved-links">
+        <h2>Saved Links</h2>
+        <ul>
+            <!-- JavaScript to dynamically populate the list of saved links -->
+            <script>
+                var savedLinks = getSavedLinks();
+                var listElement = document.getElementById('saved-links').getElementsByTagName('ul')[0];
+
+                savedLinks.forEach(function(link) {
+                    var listItem = document.createElement('li');
+                    listItem.textContent = link;
+                    listElement.appendChild(listItem);
+                });
+            </script>
+        </ul>
+    </div>
+</body>
+</html>
